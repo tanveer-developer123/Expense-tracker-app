@@ -1,8 +1,20 @@
 import React, { useEffect, useState } from "react";
 import { db, auth } from "../firebase";
 import { collection, query, onSnapshot } from "firebase/firestore";
-import { Pie, Bar } from "react-chartjs-2";
-import { Chart, ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend } from "chart.js";
+import {
+  Pie,
+  Bar,
+} from "react-chartjs-2";
+import {
+  Chart,
+  ArcElement,
+  BarElement,
+  CategoryScale,
+  LinearScale,
+  Tooltip,
+  Legend,
+} from "chart.js";
+
 Chart.register(ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
 export default function Reports() {
@@ -28,10 +40,27 @@ export default function Reports() {
     const d = e.date?.toDate ? e.date.toDate() : e.date ? new Date(e.date) : new Date();
     const cat = e.category || "Other";
     byCategory[cat] = (byCategory[cat] || 0) + amt;
-    if (d.getMonth() === currentMonth && d.getFullYear() === currentYear) totalThisMonth += amt;
+    if (d.getMonth() === currentMonth && d.getFullYear() === currentYear) {
+      totalThisMonth += amt;
+    }
   });
 
-  const pieData = { labels: Object.keys(byCategory), datasets: [{ data: Object.values(byCategory) }] };
+  const pieData = {
+    labels: Object.keys(byCategory),
+    datasets: [
+      {
+        data: Object.values(byCategory),
+        backgroundColor: [
+          "#4f46e5",
+          "#16a34a",
+          "#dc2626",
+          "#f59e0b",
+          "#0ea5e9",
+          "#9333ea",
+        ],
+      },
+    ],
+  };
 
   const months: string[] = [];
   const monthAmounts: number[] = [];
@@ -51,26 +80,40 @@ export default function Reports() {
     if (idx >= 0) monthAmounts[idx] += amt;
   });
 
-  const barData = { labels: months, datasets: [{ label: "Spent", data: monthAmounts }] };
+  const barData = {
+    labels: months,
+    datasets: [
+      {
+        label: "Spent",
+        data: monthAmounts,
+        backgroundColor: "#3b82f6",
+      },
+    ],
+  };
 
   return (
-    <div style={{padding:16, background:'#fff', borderRadius:8}}>
-      <h3 style={{fontWeight:700, marginBottom:8}}>Reports</h3>
-      <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:16}}>
-        <div>
-          <h4 style={{marginBottom:8}}>Category Breakdown</h4>
+    <div className="bg-gray-800 p-6 rounded-xl shadow-md">
+      <h3 className="text-lg font-semibold mb-6">📊 Reports</h3>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Pie Chart */}
+        <div className="bg-gray-900 p-4 rounded-lg shadow">
+          <h4 className="mb-3 font-medium">Category Breakdown</h4>
           <Pie data={pieData} />
         </div>
-        <div>
-          <h4 style={{marginBottom:8}}>Last 6 Months</h4>
+
+        {/* Bar Chart */}
+        <div className="bg-gray-900 p-4 rounded-lg shadow">
+          <h4 className="mb-3 font-medium">Last 6 Months</h4>
           <Bar data={barData} />
         </div>
       </div>
 
-      <div style={{marginTop:12, display:'flex', gap:12}}>
-        <div style={{padding:12, border:'1px solid #eee', borderRadius:8}}>
-          <div style={{fontSize:12}}>Total this month</div>
-          <div style={{fontSize:18, fontWeight:700}}>₹ {totalThisMonth}</div>
+      {/* Stats Section */}
+      <div className="mt-6 flex flex-wrap gap-4">
+        <div className="flex-1 min-w-[180px] bg-gray-900 p-4 rounded-lg border border-gray-700">
+          <div className="text-sm text-gray-400">Total this month</div>
+          <div className="text-xl font-bold text-white">₹ {totalThisMonth}</div>
         </div>
       </div>
     </div>

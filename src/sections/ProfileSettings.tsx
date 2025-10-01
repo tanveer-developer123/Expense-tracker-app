@@ -22,20 +22,45 @@ export default function ProfileSettings() {
   const save = async () => {
     if (!auth.currentUser) return;
     const ref = doc(db, "users", auth.currentUser.uid);
-    await setDoc(ref, { monthlyBudget: Number(budget || 0), currency, updatedAt: serverTimestamp() }, { merge: true });
-    alert("Saved");
+    await setDoc(
+      ref,
+      { monthlyBudget: Number(budget || 0), currency, updatedAt: serverTimestamp() },
+      { merge: true }
+    );
+    alert("Saved ✅");
   };
 
   return (
-    <div style={{padding:16, background:'#fff', borderRadius:8}}>
-      <h4 style={{fontWeight:700, marginBottom:8}}>Profile / Settings</h4>
-      <input type="number" value={budget as any} onChange={(e) => setBudget(Number(e.target.value))} placeholder="Monthly budget" style={{width:'100%', marginBottom:8, padding:8, borderRadius:6, border:'1px solid #ddd'}} />
-      <select value={currency} onChange={(e) => setCurrency(e.target.value)} style={{width:'100%', marginBottom:8, padding:8, borderRadius:6, border:'1px solid #ddd'}}>
+    <div className="bg-gray-800 p-6 rounded-xl shadow-md">
+      <h4 className="text-lg font-semibold mb-4">⚙️ Profile / Settings</h4>
+
+      {/* Budget Input */}
+      <input
+        type="number"
+        value={budget as any}
+        onChange={(e) => setBudget(Number(e.target.value))}
+        placeholder="Monthly budget"
+        className="w-full mb-3 px-3 py-2 rounded-md bg-gray-900 border border-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+      />
+
+      {/* Currency Select */}
+      <select
+        value={currency}
+        onChange={(e) => setCurrency(e.target.value)}
+        className="w-full mb-4 px-3 py-2 rounded-md bg-gray-900 border border-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+      >
         <option>PKR</option>
         <option>USD</option>
         <option>EUR</option>
       </select>
-      <button onClick={save} style={{background:'#6d28d9', color:'#fff', padding:'8px 12px', borderRadius:6}}>Save</button>
+
+      {/* Save Button */}
+      <button
+        onClick={save}
+        className="w-full py-2 px-4 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-md shadow transition"
+      >
+        Save
+      </button>
     </div>
   );
 }

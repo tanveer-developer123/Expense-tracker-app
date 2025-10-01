@@ -27,7 +27,10 @@ export default function ExpenseList() {
   useEffect(() => {
     const user = auth.currentUser;
     if (!user) return;
-    const q = query(collection(db, "users", user.uid, "expenses"), orderBy("date", "desc"));
+    const q = query(
+      collection(db, "users", user.uid, "expenses"),
+      orderBy("date", "desc")
+    );
     const unsub = onSnapshot(q, (snap) => {
       setExpenses(
         snap.docs.map((d) => {
@@ -68,45 +71,92 @@ export default function ExpenseList() {
   };
 
   return (
-    <div style={{padding:16, background:'#fff', borderRadius:8}}>
-      <h3 style={{fontWeight:700, marginBottom:8}}>Expenses</h3>
-      <div style={{overflowX:'auto'}}>
-        <table style={{width:'100%', textAlign:'left', borderCollapse:'collapse'}}>
+    <div className="bg-gray-800 p-6 rounded-xl shadow-md">
+      <h3 className="text-xl font-semibold mb-4">📋 Expenses</h3>
+      <div className="overflow-x-auto">
+        <table className="w-full text-left border-collapse">
           <thead>
-            <tr>
-              <th style={{padding:8}}>Date</th>
-              <th style={{padding:8}}>Category</th>
-              <th style={{padding:8}}>Amount</th>
-              <th style={{padding:8}}>Notes</th>
-              <th style={{padding:8}}>Actions</th>
+            <tr className="bg-gray-700 text-gray-200">
+              <th className="px-4 py-2">Date</th>
+              <th className="px-4 py-2">Category</th>
+              <th className="px-4 py-2">Amount</th>
+              <th className="px-4 py-2">Notes</th>
+              <th className="px-4 py-2">Actions</th>
             </tr>
           </thead>
           <tbody>
             {expenses.map((ex) => (
-              <tr key={ex.id} style={{borderTop:'1px solid #eee'}}>
-                <td style={{padding:8}}>{ex.date ? new Date(ex.date).toLocaleDateString() : "-"}</td>
-                <td style={{padding:8}}>{ex.category}</td>
-                <td style={{padding:8}}>{ex.amount}</td>
-                <td style={{padding:8}}>{ex.notes}</td>
-                <td style={{padding:8}}>
-                  <button onClick={() => openEdit(ex)} style={{marginRight:8, padding:'6px 10px'}}>Edit</button>
-                  <button onClick={() => handleDelete(ex.id)} style={{padding:'6px 10px', background:'#ef4444', color:'#fff', borderRadius:6}}>Delete</button>
+              <tr
+                key={ex.id}
+                className="border-t border-gray-700 hover:bg-gray-700/50"
+              >
+                <td className="px-4 py-2">
+                  {ex.date ? new Date(ex.date).toLocaleDateString() : "-"}
+                </td>
+                <td className="px-4 py-2">{ex.category}</td>
+                <td className="px-4 py-2 font-medium text-green-400">
+                  ${ex.amount}
+                </td>
+                <td className="px-4 py-2">{ex.notes}</td>
+                <td className="px-4 py-2 flex gap-2">
+                  <button
+                    onClick={() => openEdit(ex)}
+                    className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDelete(ex.id)}
+                    className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded-md text-sm"
+                  >
+                    Delete
+                  </button>
                 </td>
               </tr>
             ))}
+            {expenses.length === 0 && (
+              <tr>
+                <td
+                  colSpan={5}
+                  className="px-4 py-6 text-center text-gray-400"
+                >
+                  No expenses yet 🚀
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
 
+      {/* Edit Modal */}
       {editing && (
-        <div style={{position:'fixed', inset:0, display:'flex', alignItems:'center', justifyContent:'center', background:'rgba(0,0,0,0.4)'}}>
-          <div style={{background:'#fff', padding:16, borderRadius:8, width:420}}>
-            <h4 style={{fontWeight:700, marginBottom:8}}>Edit Expense</h4>
-            <input value={editAmount} onChange={(e) => setEditAmount(Number(e.target.value))} type="number" style={{width:'100%', marginBottom:8, padding:8, borderRadius:6, border:'1px solid #ddd'}} />
-            <textarea value={editNotes} onChange={(e) => setEditNotes(e.target.value)} style={{width:'100%', marginBottom:8, padding:8, borderRadius:6, border:'1px solid #ddd'}}></textarea>
-            <div style={{display:'flex', gap:8, justifyContent:'flex-end'}}>
-              <button onClick={() => setEditing(null)} style={{padding:'6px 10px'}}>Cancel</button>
-              <button onClick={saveEdit} style={{padding:'6px 10px', background:'#1f6feb', color:'#fff', borderRadius:6}}>Save</button>
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-gray-800 p-6 rounded-xl shadow-lg w-full max-w-md">
+            <h4 className="text-lg font-semibold mb-4">✏️ Edit Expense</h4>
+            <input
+              value={editAmount}
+              onChange={(e) => setEditAmount(Number(e.target.value))}
+              type="number"
+              className="w-full mb-3 px-4 py-2 rounded-md bg-gray-900 border border-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <textarea
+              value={editNotes}
+              onChange={(e) => setEditNotes(e.target.value)}
+              className="w-full mb-3 px-4 py-2 rounded-md bg-gray-900 border border-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            ></textarea>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setEditing(null)}
+                className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-md text-white"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={saveEdit}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-md text-white"
+              >
+                Save
+              </button>
             </div>
           </div>
         </div>

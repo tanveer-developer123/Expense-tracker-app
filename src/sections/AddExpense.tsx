@@ -7,7 +7,12 @@ type FormData = { amount: number; category: string; date: string; notes?: string
 
 export default function AddExpense() {
   const { register, handleSubmit, reset } = useForm<FormData>({
-    defaultValues: { amount: 0, category: "Food", date: new Date().toISOString().slice(0, 10), notes: "" },
+    defaultValues: { 
+      amount: 0, 
+      category: "Food", 
+      date: new Date().toISOString().slice(0, 10), 
+      notes: "" 
+    },
   });
 
   const onSubmit = async (data: FormData) => {
@@ -29,20 +34,54 @@ export default function AddExpense() {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} style={{padding:16, background:'#fff', borderRadius:8}}>
-      <h3 style={{fontWeight:700, marginBottom:8}}>Add Expense</h3>
-      <input {...register("amount", { valueAsNumber: true })} placeholder="Amount" type="number" style={{width:'100%', marginBottom:8, padding:8, borderRadius:6, border:'1px solid #ddd'}} />
-      <select {...register("category")} style={{width:'100%', marginBottom:8, padding:8, borderRadius:6, border:'1px solid #ddd'}}>
+    <form 
+      onSubmit={handleSubmit(onSubmit)} 
+      className="bg-gray-800 p-6 rounded-xl shadow-md space-y-4"
+    >
+      <h3 className="text-xl font-semibold mb-2">➕ Add Expense</h3>
+
+      {/* Amount */}
+      <input
+        {...register("amount", { valueAsNumber: true })}
+        placeholder="Amount"
+        type="number"
+        className="w-full px-4 py-2 rounded-md bg-gray-900 border border-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+      />
+
+      {/* Category */}
+      <select
+        {...register("category")}
+        className="w-full px-4 py-2 rounded-md bg-gray-900 border border-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+      >
         <option>Food</option>
         <option>Transport</option>
         <option>Shopping</option>
         <option>Bills</option>
         <option>Other</option>
       </select>
-      <input {...register("date")} type="date" style={{width:'100%', marginBottom:8, padding:8, borderRadius:6, border:'1px solid #ddd'}} />
-      <textarea {...register("notes")} placeholder="Notes (optional)" style={{width:'100%', marginBottom:8, padding:8, borderRadius:6, border:'1px solid #ddd'}} />
-      <div style={{display:'flex', gap:8}}>
-        <button type="submit" style={{background:'#16a34a', color:'#fff', padding:'8px 12px', borderRadius:6}}>Add</button>
+
+      {/* Date */}
+      <input
+        {...register("date")}
+        type="date"
+        className="w-full px-4 py-2 rounded-md bg-gray-900 border border-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+      />
+
+      {/* Notes */}
+      <textarea
+        {...register("notes")}
+        placeholder="Notes (optional)"
+        className="w-full px-4 py-2 rounded-md bg-gray-900 border border-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+      />
+
+      {/* Submit Button */}
+      <div className="flex justify-end">
+        <button 
+          type="submit" 
+          className="bg-green-600 hover:bg-green-700 px-5 py-2 rounded-md font-semibold transition text-white"
+        >
+          Add Expense
+        </button>
       </div>
     </form>
   );
