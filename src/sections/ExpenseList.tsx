@@ -18,7 +18,16 @@ type Expense = {
   date?: Date | null;
 };
 
-export default function ExpenseList() {
+// Props type for filters
+type ExpenseListProps = {
+  filters: {
+    category: string;
+    start: string;
+    end: string;
+  };
+};
+
+export default function ExpenseList({ filters }: ExpenseListProps) {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [editing, setEditing] = useState<Expense | null>(null);
   const [editNotes, setEditNotes] = useState("");
@@ -76,9 +85,25 @@ export default function ExpenseList() {
     setEditing(null);
   };
 
+  // ✅ Apply Filters
+  const filtered = expenses.filter((ex) => {
+    const matchesCategory =
+      filters.category === "All" || ex.category === filters.category;
+
+    const matchesStart = filters.start
+      ? ex.date && ex.date >= new Date(filters.start)
+      : true;
+
+    const matchesEnd = filters.end
+      ? ex.date && ex.date <= new Date(filters.end)
+      : true;
+
+    return matchesCategory && matchesStart && matchesEnd;
+  });
+
   // ✅ Group by Date
   const grouped: Record<string, Expense[]> = {};
-  expenses.forEach((ex) => {
+  filtered.forEach((ex) => {
     const dateStr = ex.date ? ex.date.toLocaleDateString() : "No Date";
     if (!grouped[dateStr]) grouped[dateStr] = [];
     grouped[dateStr].push(ex);
@@ -89,9 +114,11 @@ export default function ExpenseList() {
       <h3 className="text-xl font-semibold mb-4">📋 Expenses</h3>
 
       {/* Scrollable Area */}
-      <div className="max-h-[400px] overflow-y-auto pr-2">
+      <div className="max-h-[660px] overflow-y-auto pr-2">
         {Object.keys(grouped).length === 0 && (
-          <p className="text-center text-gray-400 py-6">No expenses yet 🚀</p>
+          <p className="text-center text-gray-400 py-6">
+            No expenses match filters 🚀
+          </p>
         )}
 
         {Object.entries(grouped).map(([date, exList]) => (

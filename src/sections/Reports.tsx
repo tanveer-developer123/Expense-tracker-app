@@ -17,7 +17,6 @@ import {
 } from "chart.js";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
-import "jspdf-autotable";
 
 ChartJS.register(
   ArcElement,
@@ -31,7 +30,15 @@ ChartJS.register(
   Title
 );
 
-export default function Reports() {
+type ReportsProps = {
+  filters: {
+    category: string;
+    start: string;
+    end: string;
+  };
+};
+
+export default function Reports({ filters }: ReportsProps) {
   const [expenses, setExpenses] = useState<any[]>([]);
   const [dataType, setDataType] = useState("monthly");
   const [chartType, setChartType] = useState("bar");
@@ -137,24 +144,24 @@ export default function Reports() {
   };
 
   // ✅ Export PDF
- const exportPDF = () => {
-  const doc = new jsPDF();
-  doc.text("Expense Report", 14, 10);
+  const exportPDF = () => {
+    const doc = new jsPDF();
+    doc.text("Expense Report", 14, 10);
 
-  const tableData = expenses.map((ex) => [
-    ex.date?.toDate ? ex.date.toDate().toLocaleDateString() : "-",
-    ex.category,
-    ex.amount,
-    ex.notes,
-  ]);
+    const tableData = expenses.map((ex) => [
+      ex.date?.toDate ? ex.date.toDate().toLocaleDateString() : "-",
+      ex.category,
+      ex.amount,
+      ex.notes,
+    ]);
 
-  autoTable(doc, {
-    head: [["Date", "Category", "Amount", "Notes"]],
-    body: tableData,
-  });
+    autoTable(doc, {
+      head: [["Date", "Category", "Amount", "Notes"]],
+      body: tableData,
+    });
 
-  doc.save("report.pdf");
-};
+    doc.save("report.pdf");
+  };
 
   return (
     <div className="bg-gray-800 p-6 rounded-xl shadow-md">

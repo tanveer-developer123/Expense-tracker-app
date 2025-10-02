@@ -3,7 +3,7 @@ import AddExpense from "../sections/AddExpense";
 import ExpenseList from "../sections/ExpenseList";
 import Filters from "../sections/Filters";
 import Reports from "../sections/Reports";
-import ProfileSettings from "../sections/ProfileSettings";
+// import ProfileSettings from "../sections/ProfileSettings";
 import { auth } from "../firebase";
 import { useNavigate } from "react-router-dom";
 
@@ -42,8 +42,12 @@ export default function DashboardPage() {
           <div className="bg-gray-800 p-4 rounded-xl shadow-md">
             <AddExpense />
           </div>
+          {/* <div className="bg-gray-800 p-4 rounded-xl shadow-md"> */}
+            {/* <ProfileSettings /> */}
+          {/* </div> */}
           <div className="bg-gray-800 p-4 rounded-xl shadow-md">
-            <ProfileSettings />
+            {/* Reports ko bhi filters diye */}
+            <Reports filters={filters} />
           </div>
         </div>
 
@@ -57,10 +61,10 @@ export default function DashboardPage() {
             {/* ExpenseList ko filters diye */}
             <ExpenseList filters={filters} />
           </div>
-          <div className="bg-gray-800 p-4 rounded-xl shadow-md">
+          {/* <div className="bg-gray-800 p-4 rounded-xl shadow-md"> */}
             {/* Reports ko bhi filters diye */}
-            <Reports filters={filters} />
-          </div>
+            {/* <Reports filters={filters} /> */}
+          {/* </div> */}
         </div>
       </main>
     </div>

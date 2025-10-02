@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 
 type FiltersProps = {
   filters: {
@@ -16,9 +16,17 @@ type FiltersProps = {
 };
 
 export default function Filters({ filters, setFilters }: FiltersProps) {
+  const [customCategory, setCustomCategory] = useState("");
+
   const apply = () => {
-    console.log("Applied Filters ✅", filters);
-    alert("Filters applied! Data will update accordingly.");
+    let finalFilters = { ...filters };
+    if (filters.category === "Other" && customCategory.trim() !== "") {
+      finalFilters.category = customCategory.trim();
+    }
+    setFilters(finalFilters);
+
+    console.log("Apply filters:", finalFilters);
+    alert("Filters Applied");
   };
 
   return (
@@ -43,6 +51,20 @@ export default function Filters({ filters, setFilters }: FiltersProps) {
             <option>Other</option>
           </select>
         </div>
+
+        {/* Custom Category (only when Other selected) */}
+        {filters.category === "Other" && (
+          <div className="flex flex-col">
+            <label className="text-sm text-gray-300 mb-1">Custom Category</label>
+            <input
+              type="text"
+              value={customCategory}
+              onChange={(e) => setCustomCategory(e.target.value)}
+              placeholder="Enter category name"
+              className="px-3 py-2 rounded-md bg-gray-900 border border-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+            />
+          </div>
+        )}
 
         {/* Start Date */}
         <div className="flex flex-col">
