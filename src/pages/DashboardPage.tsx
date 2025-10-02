@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import AddExpense from "../sections/AddExpense";
 import ExpenseList from "../sections/ExpenseList";
 import Filters from "../sections/Filters";
@@ -9,6 +9,13 @@ import { useNavigate } from "react-router-dom";
 
 export default function DashboardPage() {
   const nav = useNavigate();
+
+  // 🔹 Global filter state (shared by Filters, ExpenseList, Reports)
+  const [filters, setFilters] = useState({
+    category: "All",
+    start: "",
+    end: "",
+  });
 
   const logout = async () => {
     await auth.signOut();
@@ -43,13 +50,16 @@ export default function DashboardPage() {
         {/* Right Column */}
         <div className="flex flex-col gap-6 md:col-span-2">
           <div className="bg-gray-800 p-4 rounded-xl shadow-md">
-            <Filters />
+            {/* Filters ko global state pass kar diya */}
+            <Filters filters={filters} setFilters={setFilters} />
           </div>
           <div className="bg-gray-800 p-4 rounded-xl shadow-md">
-            <ExpenseList />
+            {/* ExpenseList ko filters diye */}
+            <ExpenseList filters={filters} />
           </div>
           <div className="bg-gray-800 p-4 rounded-xl shadow-md">
-            <Reports />
+            {/* Reports ko bhi filters diye */}
+            <Reports filters={filters} />
           </div>
         </div>
       </main>

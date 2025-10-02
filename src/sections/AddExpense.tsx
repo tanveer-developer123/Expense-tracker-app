@@ -3,10 +3,16 @@ import { useForm } from "react-hook-form";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { db, auth } from "../firebase";
 
-type FormData = { amount: number; category: string; date: string; notes?: string };
+type FormData = { 
+  amount: number; 
+  category: string; 
+  customCategory?: string;
+  date: string; 
+  notes?: string 
+};
 
 export default function AddExpense() {
-  const { register, handleSubmit, reset } = useForm<FormData>({
+  const { register, handleSubmit, reset, watch } = useForm<FormData>({
     defaultValues: { 
       amount: 0, 
       category: "Food", 
@@ -15,13 +21,21 @@ export default function AddExpense() {
     },
   });
 
+  const selectedCategory = watch("category"); // watch current category
+
   const onSubmit = async (data: FormData) => {
     if (!auth.currentUser) return alert("Not logged in");
     const uid = auth.currentUser.uid;
+
+    // agar Other hai, to customCategory use karo
+    const finalCategory = data.category === "Other" && data.customCategory 
+      ? data.customCategory 
+      : data.category;
+
     try {
       await addDoc(collection(db, "users", uid, "expenses"), {
         amount: Number(data.amount),
-        category: data.category,
+        category: finalCategory,
         notes: data.notes || "",
         date: new Date(data.date),
         createdAt: serverTimestamp(),
@@ -59,6 +73,15 @@ export default function AddExpense() {
         <option>Bills</option>
         <option>Other</option>
       </select>
+
+      {/* If "Other" selected, show custom input */}
+      {selectedCategory === "Other" && (
+        <input
+          {...register("customCategory")}
+          placeholder="Enter category name"
+          className="w-full px-4 py-2 rounded-md bg-gray-900 border border-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+        />
+      )}
 
       {/* Date */}
       <input

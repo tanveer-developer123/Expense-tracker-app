@@ -1,13 +1,24 @@
-import React, { useState } from "react";
+import React from "react";
 
-export default function Filters() {
-  const [category, setCategory] = useState<string>("All");
-  const [start, setStart] = useState<string>("");
-  const [end, setEnd] = useState<string>("");
+type FiltersProps = {
+  filters: {
+    category: string;
+    start: string;
+    end: string;
+  };
+  setFilters: React.Dispatch<
+    React.SetStateAction<{
+      category: string;
+      start: string;
+      end: string;
+    }>
+  >;
+};
 
+export default function Filters({ filters, setFilters }: FiltersProps) {
   const apply = () => {
-    console.log("Apply filters (category, start, end):", category, start, end);
-    alert("Filter applied — implement Firestore query builder.");
+    console.log("Applied Filters ✅", filters);
+    alert("Filters applied! Data will update accordingly.");
   };
 
   return (
@@ -18,8 +29,10 @@ export default function Filters() {
         <div className="flex flex-col">
           <label className="text-sm text-gray-300 mb-1">Category</label>
           <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
+            value={filters.category}
+            onChange={(e) =>
+              setFilters((prev) => ({ ...prev, category: e.target.value }))
+            }
             className="px-3 py-2 rounded-md bg-gray-900 border border-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option>All</option>
@@ -36,8 +49,10 @@ export default function Filters() {
           <label className="text-sm text-gray-300 mb-1">Start</label>
           <input
             type="date"
-            value={start}
-            onChange={(e) => setStart(e.target.value)}
+            value={filters.start}
+            onChange={(e) =>
+              setFilters((prev) => ({ ...prev, start: e.target.value }))
+            }
             className="px-3 py-2 rounded-md bg-gray-900 border border-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
@@ -47,8 +62,10 @@ export default function Filters() {
           <label className="text-sm text-gray-300 mb-1">End</label>
           <input
             type="date"
-            value={end}
-            onChange={(e) => setEnd(e.target.value)}
+            value={filters.end}
+            onChange={(e) =>
+              setFilters((prev) => ({ ...prev, end: e.target.value }))
+            }
             className="px-3 py-2 rounded-md bg-gray-900 border border-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>

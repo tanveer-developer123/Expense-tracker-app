@@ -15,7 +15,7 @@ type Expense = {
   amount: number;
   category: string;
   notes?: string;
-  date?: any;
+  date?: Date | null;
 };
 
 export default function ExpenseList() {
@@ -27,10 +27,12 @@ export default function ExpenseList() {
   useEffect(() => {
     const user = auth.currentUser;
     if (!user) return;
+
     const q = query(
       collection(db, "users", user.uid, "expenses"),
       orderBy("date", "desc")
     );
+
     const unsub = onSnapshot(q, (snap) => {
       setExpenses(
         snap.docs.map((d) => {
@@ -40,17 +42,19 @@ export default function ExpenseList() {
             amount: data.amount,
             category: data.category,
             notes: data.notes || "",
-            date: data.date ? data.date.toDate?.() ?? new Date(data.date) : null,
+            date: data.date?.toDate ? data.date.toDate() : null,
           } as Expense;
         })
       );
     });
+
     return () => unsub();
   }, []);
 
   const handleDelete = async (id: string) => {
     if (!auth.currentUser) return;
     if (!confirm("Delete this expense?")) return;
+
     await deleteDoc(doc(db, "users", auth.currentUser.uid, "expenses", id));
   };
 
@@ -63,69 +67,80 @@ export default function ExpenseList() {
   const saveEdit = async () => {
     if (!editing || !auth.currentUser) return;
     const ref = doc(db, "users", auth.currentUser.uid, "expenses", editing.id);
+
     await updateDoc(ref, {
       amount: Number(editAmount),
       notes: editNotes,
     });
+
     setEditing(null);
   };
+
+  // ✅ Group by Date
+  const grouped: Record<string, Expense[]> = {};
+  expenses.forEach((ex) => {
+    const dateStr = ex.date ? ex.date.toLocaleDateString() : "No Date";
+    if (!grouped[dateStr]) grouped[dateStr] = [];
+    grouped[dateStr].push(ex);
+  });
 
   return (
     <div className="bg-gray-800 p-6 rounded-xl shadow-md">
       <h3 className="text-xl font-semibold mb-4">📋 Expenses</h3>
-      <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="bg-gray-700 text-gray-200">
-              <th className="px-4 py-2">Date</th>
-              <th className="px-4 py-2">Category</th>
-              <th className="px-4 py-2">Amount</th>
-              <th className="px-4 py-2">Notes</th>
-              <th className="px-4 py-2">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {expenses.map((ex) => (
-              <tr
-                key={ex.id}
-                className="border-t border-gray-700 hover:bg-gray-700/50"
-              >
-                <td className="px-4 py-2">
-                  {ex.date ? new Date(ex.date).toLocaleDateString() : "-"}
-                </td>
-                <td className="px-4 py-2">{ex.category}</td>
-                <td className="px-4 py-2 font-medium text-green-400">
-                  ${ex.amount}
-                </td>
-                <td className="px-4 py-2">{ex.notes}</td>
-                <td className="px-4 py-2 flex gap-2">
-                  <button
-                    onClick={() => openEdit(ex)}
-                    className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm"
+
+      {/* Scrollable Area */}
+      <div className="max-h-[400px] overflow-y-auto pr-2">
+        {Object.keys(grouped).length === 0 && (
+          <p className="text-center text-gray-400 py-6">No expenses yet 🚀</p>
+        )}
+
+        {Object.entries(grouped).map(([date, exList]) => (
+          <div key={date} className="mb-6">
+            {/* Date Heading */}
+            <h4 className="text-lg font-medium text-white mb-2 border-b border-gray-600 pb-1">
+              {date}
+            </h4>
+
+            <table className="w-full text-left border-collapse mb-4">
+              <thead>
+                <tr className="bg-gray-700 text-gray-200 text-sm">
+                  <th className="px-4 py-2">Category</th>
+                  <th className="px-4 py-2">Amount</th>
+                  <th className="px-4 py-2">Notes</th>
+                  <th className="px-4 py-2">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {exList.map((ex) => (
+                  <tr
+                    key={ex.id}
+                    className="border-t border-gray-700 hover:bg-gray-700/50"
                   >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => handleDelete(ex.id)}
-                    className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded-md text-sm"
-                  >
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            ))}
-            {expenses.length === 0 && (
-              <tr>
-                <td
-                  colSpan={5}
-                  className="px-4 py-6 text-center text-gray-400"
-                >
-                  No expenses yet 🚀
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+                    <td className="px-4 py-2">{ex.category}</td>
+                    <td className="px-4 py-2 font-medium text-green-400">
+                      {ex.amount}
+                    </td>
+                    <td className="px-4 py-2">{ex.notes}</td>
+                    <td className="px-4 py-2 flex gap-2">
+                      <button
+                        onClick={() => openEdit(ex)}
+                        className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDelete(ex.id)}
+                        className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded-md text-sm"
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ))}
       </div>
 
       {/* Edit Modal */}
