@@ -40,7 +40,7 @@ type ReportsProps = {
 
 export default function Reports({ filters }: ReportsProps) {
   const [expenses, setExpenses] = useState<any[]>([]);
-  const [dataType, setDataType] = useState("monthly");
+  const [dataType, setDataType] = useState("category");
   const [chartType, setChartType] = useState("bar");
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
@@ -213,7 +213,7 @@ export default function Reports({ filters }: ReportsProps) {
           <div className="text-sm text-gray-400">
             Total {new Date(selectedYear, selectedMonth).toLocaleString("default", { month: "long", year: "numeric" })}
           </div>
-          <div className="text-xl font-bold text-white">₹ {totalThisMonth}</div>
+          <div className="text-xl font-bold text-white">PKR {totalThisMonth}</div>
         </div>
 
         {/* Export Buttons */}

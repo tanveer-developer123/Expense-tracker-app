@@ -114,10 +114,10 @@ export default function ExpenseList({ filters }: ExpenseListProps) {
       <h3 className="text-xl font-semibold mb-4">📋 Expenses</h3>
 
       {/* Scrollable Area */}
-      <div className="max-h-[660px] overflow-y-auto pr-2">
+      <div className="max-h-[400px] overflow-y-auto pr-2">
         {Object.keys(grouped).length === 0 && (
           <p className="text-center text-gray-400 py-6">
-            No expenses match filters 🚀
+            No expenses match filters
           </p>
         )}
 
@@ -174,8 +174,9 @@ export default function ExpenseList({ filters }: ExpenseListProps) {
       {editing && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-gray-800 p-6 rounded-xl shadow-lg w-full max-w-md">
-            <h4 className="text-lg font-semibold mb-4">✏️ Edit Expense</h4>
+            <h4 className="text-lg font-semibold mb-4">Edit Expense</h4>
             <input
+              style={{ resize: 'none' }}
               value={editAmount}
               onChange={(e) => setEditAmount(Number(e.target.value))}
               type="number"

@@ -3,21 +3,21 @@ import { useForm } from "react-hook-form";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { db, auth } from "../firebase";
 
-type FormData = { 
-  amount: number; 
-  category: string; 
+type FormData = {
+  amount: number;
+  category: string;
   customCategory?: string;
-  date: string; 
-  notes?: string 
+  date: string;
+  notes?: string
 };
 
 export default function AddExpense() {
   const { register, handleSubmit, reset, watch } = useForm<FormData>({
-    defaultValues: { 
-      amount: 0, 
-      category: "Food", 
-      date: new Date().toISOString().slice(0, 10), 
-      notes: "" 
+    defaultValues: {
+      amount: 0,
+      category: "Food",
+      date: new Date().toISOString().slice(0, 10),
+      notes: ""
     },
   });
 
@@ -28,8 +28,8 @@ export default function AddExpense() {
     const uid = auth.currentUser.uid;
 
     // agar Other hai, to customCategory use karo
-    const finalCategory = data.category === "Other" && data.customCategory 
-      ? data.customCategory 
+    const finalCategory = data.category === "Other" && data.customCategory
+      ? data.customCategory
       : data.category;
 
     try {
@@ -48,11 +48,11 @@ export default function AddExpense() {
   };
 
   return (
-    <form 
-      onSubmit={handleSubmit(onSubmit)} 
-      className="bg-gray-800 p-6 rounded-xl shadow-md space-y-4"
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      className="bg-gray-800 p-6 rounded-xl shadow-md space-y-4 "
     >
-      <h3 className="text-xl font-semibold mb-2">➕ Add Expense</h3>
+      <h3 className="text-xl font-semibold mb-2">Add Expense</h3>
 
       {/* Amount */}
       <input
@@ -92,6 +92,7 @@ export default function AddExpense() {
 
       {/* Notes */}
       <textarea
+        style={{ resize: 'none' }}
         {...register("notes")}
         placeholder="Notes (optional)"
         className="w-full px-4 py-2 rounded-md bg-gray-900 border border-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-green-500"
@@ -99,8 +100,8 @@ export default function AddExpense() {
 
       {/* Submit Button */}
       <div className="flex justify-end">
-        <button 
-          type="submit" 
+        <button
+          type="submit"
           className="bg-green-600 hover:bg-green-700 px-5 py-2 rounded-md font-semibold transition text-white"
         >
           Add Expense

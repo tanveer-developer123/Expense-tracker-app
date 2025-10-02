@@ -1,6 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { db, auth } from "../firebase";
-import { doc, setDoc, getDoc, serverTimestamp, collection, query, where, getDocs } from "firebase/firestore";
+import {
+  doc,
+  setDoc,
+  getDoc,
+  serverTimestamp,
+  collection,
+  query,
+  where,
+  getDocs,
+} from "firebase/firestore";
 
 export default function ProfileSettings() {
   const [budget, setBudget] = useState<number | "">("");
@@ -12,7 +21,7 @@ export default function ProfileSettings() {
     if (!auth.currentUser) return;
 
     const loadData = async () => {
-      // 🔹 User settings load karo
+      // 🔹 Load user settings
       const ref = doc(db, "users", auth.currentUser.uid);
       const snap = await getDoc(ref);
       if (snap.exists()) {
@@ -26,10 +35,9 @@ export default function ProfileSettings() {
       const end = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0);
 
       const q = query(
-        collection(db, "expenses"),
-        where("uid", "==", auth.currentUser.uid),
-        where("date", ">=", start.toISOString()),
-        where("date", "<=", end.toISOString())
+        collection(db, "users", auth.currentUser.uid, "expenses"), // ✅ FIXED PATH
+        where("date", ">=", start),
+        where("date", "<=", end)
       );
 
       const snapExpenses = await getDocs(q);
@@ -63,7 +71,7 @@ export default function ProfileSettings() {
 
   return (
     <div className="bg-gray-800 p-6 rounded-xl shadow-md">
-      <h4 className="text-lg font-semibold mb-4">⚙️ Profile / Settings</h4>
+      <h4 className="text-lg font-semibold mb-4">Profile / Settings</h4>
 
       {/* Budget Input */}
       <input
@@ -83,8 +91,6 @@ export default function ProfileSettings() {
         className="w-full mb-4 px-3 py-2 rounded-md bg-gray-900 border border-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
       >
         <option>PKR</option>
-        <option>USD</option>
-        <option>EUR</option>
       </select>
 
       {/* Save Button */}
@@ -97,14 +103,22 @@ export default function ProfileSettings() {
 
       {/* Saved message */}
       {saved && (
-        <p className="text-green-400 text-sm mt-3">✅ Saved successfully!</p>
+        <p className="text-green-400 text-sm mt-3">Saved successfully!</p>
       )}
 
       {/* Budget Summary */}
       <div className="mt-6 bg-gray-900 p-4 rounded-md border border-gray-700">
-        <p className="text-sm text-gray-300">💰 Monthly Budget: <b>{budget || 0} {currency}</b></p>
-        <p className="text-sm text-gray-300">📊 Spent this month: <b>{monthlySpent} {currency}</b></p>
-        <p className={`text-sm font-semibold ${remaining < 0 ? "text-red-400" : "text-green-400"}`}>
+        <p className="text-sm text-gray-300">
+          💰 Monthly Budget: <b>{budget || 0} {currency}</b>
+        </p>
+        <p className="text-sm text-gray-300">
+          📊 Spent this month: <b>{monthlySpent} {currency}</b>
+        </p>
+        <p
+          className={`text-sm font-semibold ${
+            remaining < 0 ? "text-red-400" : "text-green-400"
+          }`}
+        >
           {remaining < 0 ? "⚠️ Over Budget!" : "✅ Remaining:"} {remaining} {currency}
         </p>
       </div>
