@@ -8,8 +8,9 @@ import {
   collection,
   query,
   where,
-  getDocs,
+  onSnapshot,
 } from "firebase/firestore";
+import { motion } from "framer-motion";
 
 export default function ProfileSettings() {
   const [budget, setBudget] = useState<number | "">("");
@@ -20,35 +21,34 @@ export default function ProfileSettings() {
   useEffect(() => {
     if (!auth.currentUser) return;
 
-    const loadData = async () => {
-      // 🔹 Load user settings
-      const ref = doc(db, "users", auth.currentUser.uid);
+    const ref = doc(db, "users", auth.currentUser.uid);
+
+    const loadSettings = async () => {
       const snap = await getDoc(ref);
       if (snap.exists()) {
         const data: any = snap.data();
         setBudget(data.monthlyBudget ?? "");
         setCurrency(data.currency ?? "PKR");
       }
-
-      // 🔹 Current month ke expenses sum karo
-      const start = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
-      const end = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0);
-
-      const q = query(
-        collection(db, "users", auth.currentUser.uid, "expenses"), // ✅ FIXED PATH
-        where("date", ">=", start),
-        where("date", "<=", end)
-      );
-
-      const snapExpenses = await getDocs(q);
-      let total = 0;
-      snapExpenses.forEach((doc) => {
-        total += doc.data().amount || 0;
-      });
-      setMonthlySpent(total);
     };
+    loadSettings();
 
-    loadData();
+    const start = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+    const end = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0);
+
+    const q = query(
+      collection(db, "users", auth.currentUser.uid, "expenses"),
+      where("date", ">=", start),
+      where("date", "<=", end)
+    );
+
+    const unsub = onSnapshot(q, (snap) => {
+      let total = 0;
+      snap.forEach((doc) => (total += doc.data().amount || 0));
+      setMonthlySpent(total);
+    });
+
+    return () => unsub();
   }, []);
 
   const save = async () => {
@@ -68,60 +68,113 @@ export default function ProfileSettings() {
   };
 
   const remaining = (budget === "" ? 0 : Number(budget)) - monthlySpent;
+  const percentage =
+    budget && Number(budget) > 0
+      ? Math.min((monthlySpent / Number(budget)) * 100, 100)
+      : 0;
 
   return (
-    <div className="bg-gray-800 p-6 rounded-xl shadow-md">
-      <h4 className="text-lg font-semibold mb-4">Profile / Settings</h4>
+    <motion.div
+      initial={{ opacity: 0, y: 25 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6 }}
+      className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 
+                 p-8 rounded-2xl shadow-2xl border border-gray-700
+                 max-w-lg mx-auto backdrop-blur-sm"
+    >
+      <h2 className="text-2xl font-bold text-center text-purple-400 mb-6">
+        Profile & Budget Settings
+      </h2>
 
-      {/* Budget Input */}
-      <input
-        type="number"
-        value={budget}
-        onChange={(e) =>
-          setBudget(e.target.value === "" ? "" : Number(e.target.value))
-        }
-        placeholder="Monthly budget"
-        className="w-full mb-3 px-3 py-2 rounded-md bg-gray-900 border border-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
-      />
+      {/* Inputs */}
+      <div className="space-y-4">
+        <div>
+          <label className="block text-gray-300 text-sm mb-1">Monthly Budget</label>
+          <input
+            type="number"
+            value={budget}
+            onChange={(e) =>
+              setBudget(e.target.value === "" ? "" : Number(e.target.value))
+            }
+            placeholder="Enter monthly budget"
+            className="w-full px-4 py-2 rounded-lg bg-gray-950/70 border border-gray-700
+                       text-white focus:outline-none focus:ring-2 focus:ring-purple-500 
+                       placeholder-gray-500"
+          />
+        </div>
 
-      {/* Currency Select */}
-      <select
-        value={currency}
-        onChange={(e) => setCurrency(e.target.value)}
-        className="w-full mb-4 px-3 py-2 rounded-md bg-gray-900 border border-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
-      >
-        <option>PKR</option>
-      </select>
+        <div>
+          <label className="block text-gray-300 text-sm mb-1">Currency</label>
+          <span>
+              PKR
+            </span>
+          {/* <select
+            value={currency}
+            onChange={(e) => setCurrency(e.target.value)}
+            className="w-full px-4 py-2 rounded-lg bg-gray-950/70 border border-gray-700 
+                       text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+          >
+            <span>
+              PKR
+            </span>
+          </select> */}
+        </div>
 
-      {/* Save Button */}
-      <button
-        onClick={save}
-        className="w-full py-2 px-4 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-md shadow transition"
-      >
-        Save
-      </button>
+        <motion.button
+          whileTap={{ scale: 0.95 }}
+          onClick={save}
+          className="w-full py-2 bg-purple-600 hover:bg-purple-700 
+                     text-white font-semibold rounded-lg shadow-md transition"
+        >
+          Save Changes
+        </motion.button>
 
-      {/* Saved message */}
-      {saved && (
-        <p className="text-green-400 text-sm mt-3">Saved successfully!</p>
-      )}
+        {saved && (
+          <p className="text-green-400 text-sm text-center mt-2">
+            Settings saved successfully!
+          </p>
+        )}
+      </div>
+
+      {/* Divider */}
+      <div className="border-t border-gray-700 my-6"></div>
 
       {/* Budget Summary */}
-      <div className="mt-6 bg-gray-900 p-4 rounded-md border border-gray-700">
-        <p className="text-sm text-gray-300">
-          💰 Monthly Budget: <b>{budget || 0} {currency}</b>
+      <div className="space-y-2 text-gray-300">
+        <p>
+          💰 <span className="font-medium">Monthly Budget:</span>{" "}
+          <b className="text-white">{budget || 0} {currency}</b>
         </p>
-        <p className="text-sm text-gray-300">
-          📊 Spent this month: <b>{monthlySpent} {currency}</b>
+        <p>
+          📊 <span className="font-medium">Spent this month:</span>{" "}
+          <b className="text-white">{monthlySpent} {currency}</b>
         </p>
+
+        {/* Progress Bar */}
+        <div className="mt-3 w-full bg-gray-700 rounded-full h-3 overflow-hidden">
+          <motion.div
+            initial={{ width: 0 }}
+            animate={{ width: `${percentage}%` }}
+            transition={{ duration: 0.8 }}
+            className={`h-3 rounded-full ${percentage >= 90
+                ? "bg-red-500"
+                : percentage >= 70
+                  ? "bg-yellow-500"
+                  : "bg-green-500"
+              }`}
+          ></motion.div>
+        </div>
+
+        {/* Remaining */}
         <p
-          className={`text-sm font-semibold ${
-            remaining < 0 ? "text-red-400" : "text-green-400"
-          }`}
+          className={`text-sm font-semibold mt-2 ${remaining < 0 ? "text-red-400" : "text-green-400"
+            }`}
         >
-          {remaining < 0 ? "⚠️ Over Budget!" : "✅ Remaining:"} {remaining} {currency}
+          {remaining < 0
+            ? `⚠️ Over Budget by ${Math.abs(remaining)} ${currency}`
+            : `✅ Remaining: ${remaining} ${currency}`}
         </p>
       </div>
-    </div>
+    </motion.div>
   );
 }

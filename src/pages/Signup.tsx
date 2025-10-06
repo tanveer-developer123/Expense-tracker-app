@@ -1,32 +1,29 @@
+// src/pages/Signup.tsx
 import { useState } from "react";
-import { FaEnvelope, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
+import { motion } from "framer-motion";
+import { FaEnvelope, FaLock, FaUser, FaEye, FaEyeSlash } from "react-icons/fa";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { auth } from "../firebase";
-import { useNavigate } from "react-router-dom";
-import { FaUser } from "react-icons/fa";
+import { Link, useNavigate } from "react-router-dom";
 
-const Signup = () => {
+export default function Signup() {
   const navigate = useNavigate();
-
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
-
     try {
-      const userCred = await createUserWithEmailAndPassword(auth, email, password);
-
-      // set full name in profile
+      await createUserWithEmailAndPassword(auth, email, password);
       if (auth.currentUser) {
         await updateProfile(auth.currentUser, { displayName: fullName });
       }
-
       navigate("/dashboard");
     } catch (err: any) {
       setError(err.message);
@@ -36,95 +33,108 @@ const Signup = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-black text-white">
-      <form
-        onSubmit={handleSignup}
-        className="bg-zinc-900 p-8 rounded-2xl shadow-2xl w-full max-w-md"
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 relative overflow-hidden px-4">
+      {/* Background glow */}
+      <div className="absolute inset-0 blur-3xl bg-gradient-to-tr from-indigo-500/10 via-purple-600/10 to-pink-500/10 animate-pulse"></div>
+
+      {/* Animated Card */}
+      <motion.div
+        initial={{ opacity: 0, y: 60 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
+        className="w-full max-w-md bg-gray-800/60 backdrop-blur-xl border border-gray-700 rounded-3xl shadow-2xl p-8 relative z-10"
       >
-        <h2 className="text-3xl font-extrabold mb-6 text-center">
-          Create Account
-        </h2>
+        <motion.h2
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="text-3xl font-bold text-center text-white mb-8"
+        >
+          Create Your Account
+        </motion.h2>
 
         {error && (
-          <p className="text-red-400 text-sm mb-4 text-center font-medium">
+          <p className="text-red-400 text-center mb-4 text-sm font-medium">
             {error}
           </p>
         )}
 
-        {/* Full Name */}
-        <div className="mb-4">
-          <label className="block text-sm font-semibold mb-1">Full Name</label>
-          <div className="flex items-center bg-zinc-800 rounded-lg px-3">
-            <FaUser className="text-gray-400 mr-2" />
-            <input
-              type="text"
-              placeholder="John Doe"
-              className="w-full bg-transparent py-2 focus:outline-none text-white placeholder-gray-400"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              required
-            />
-          </div>
-        </div>
+        <form onSubmit={handleSignup} className="space-y-6">
+          {/* Full Name */}
+          <motion.div whileHover={{ scale: 1.02 }}>
+            <label className="text-sm text-gray-300 mb-1 block">Full Name</label>
+            <div className="relative">
+              <FaUser className="absolute left-3 top-3 text-gray-400" />
+              <input
+                type="text"
+                placeholder="John Doe"
+                className="w-full bg-gray-700/50 border border-gray-600 rounded-xl pl-10 pr-4 py-2.5 text-white placeholder-gray-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-400 outline-none transition-all"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                required
+              />
+            </div>
+          </motion.div>
 
-        {/* Email */}
-        <div className="mb-4">
-          <label className="block text-sm font-semibold mb-1">Email</label>
-          <div className="flex items-center bg-zinc-800 rounded-lg px-3">
-            <FaEnvelope className="text-gray-400 mr-2" />
-            <input
-              type="email"
-              placeholder="example@email.com"
-              className="w-full bg-transparent py-2 focus:outline-none text-white placeholder-gray-400"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
-        </div>
+          {/* Email */}
+          <motion.div whileHover={{ scale: 1.02 }}>
+            <label className="text-sm text-gray-300 mb-1 block">Email</label>
+            <div className="relative">
+              <FaEnvelope className="absolute left-3 top-3 text-gray-400" />
+              <input
+                type="email"
+                placeholder="example@email.com"
+                className="w-full bg-gray-700/50 border border-gray-600 rounded-xl pl-10 pr-4 py-2.5 text-white placeholder-gray-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-400 outline-none transition-all"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+          </motion.div>
 
-        {/* Password */}
-        <div>
-          <label className=" block text-sm font-medium mb-1">Password</label>
-          <div className="mb-6 flex items-center bg-zinc-800 rounded-lg px-3">
-            <FaLock className="text-gray-400 mr-2" />
-            <input
-              type={password ? "text" : "password"}
-              placeholder="••••••••"
-              className="w-full bg-transparent py-2 focus:outline-none text-white placeholder-gray-400"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-            <button
-              type="button"
-              onClick={() => setPassword((s) => !s)}
-              className="ml-2 p-1 text-gray-300 hover:text-white"
-              aria-label={password ? "Hide password" : "Show password"}
-            >
-              {password ? <FaEyeSlash /> : <FaEye />}
-            </button>
-          </div>
-        </div>
+          {/* Password */}
+          <motion.div whileHover={{ scale: 1.02 }}>
+            <label className="text-sm text-gray-300 mb-1 block">Password</label>
+            <div className="relative">
+              <FaLock className="absolute left-3 top-3 text-gray-400" />
+              <input
+                type={showPassword ? "text" : "password"}
+                placeholder="••••••••"
+                className="w-full bg-gray-700/50 border border-gray-600 rounded-xl pl-10 pr-10 py-2.5 text-white placeholder-gray-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-400 outline-none transition-all"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-3 text-gray-400 hover:text-gray-200 transition"
+              >
+                {showPassword ? <FaEyeSlash /> : <FaEye />}
+              </button>
+            </div>
+          </motion.div>
 
-        {/* Modern Button */}
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full py-3 rounded-xl bg-white text-black font-semibold text-lg shadow-md hover:bg-gray-200 transition disabled:opacity-50"
-        >
-          {loading ? "Creating..." : "Sign Up"}
-        </button>
+          {/* Button */}
+          <motion.button
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+            type="submit"
+            disabled={loading}
+            className="w-full py-3 bg-indigo-500 hover:bg-indigo-600 text-white font-semibold rounded-xl shadow-lg shadow-indigo-500/30 transition-all disabled:opacity-60"
+          >
+            {loading ? "Creating Account..." : "Sign Up"}
+          </motion.button>
+        </form>
 
-        <p className="text-sm mt-6 text-center text-gray-400">
+        {/* Footer */}
+        <p className="text-sm text-gray-400 mt-6 text-center">
           Already have an account?{" "}
-          <a href="/login" className="text-white font-semibold hover:underline">
-            Login
-          </a>
+          <Link to="/login" className="text-indigo-400 hover:underline">
+            Login here
+          </Link>
         </p>
-      </form>
+      </motion.div>
     </div>
   );
-};
-
-export default Signup;
+}

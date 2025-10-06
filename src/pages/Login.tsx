@@ -1,46 +1,38 @@
 // src/pages/Login.tsx
 import { useState } from "react";
-import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
-import { auth, provider } from "../firebase";
-import { useNavigate } from "react-router-dom";
-import { FaEnvelope, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
+import { motion } from "framer-motion";
+import {
+  FaEnvelope,
+  FaLock,
+  FaEye,
+  FaEyeSlash,
+} from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
+import {
+  signInWithEmailAndPassword,
+  signInWithPopup,
+} from "firebase/auth";
+import { auth, provider } from "../firebase";
+import { Link, useNavigate } from "react-router-dom";
 
-const Login = () => {
+export default function Login() {
   const navigate = useNavigate();
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [loadingGoogle, setLoadingGoogle] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const friendlyError = (code: string | undefined) => {
-    switch (code) {
-      case "auth/user-not-found":
-        return "No account found with this email.";
-      case "auth/wrong-password":
-        return "Incorrect password.";
-      case "auth/invalid-email":
-        return "Invalid email address.";
-      case "auth/popup-closed-by-user":
-        return "Google sign-in cancelled.";
-      default:
-        return "Something went wrong. Try again.";
-    }
-  };
-
-  const handleEmailLogin = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
-
     try {
       await signInWithEmailAndPassword(auth, email, password);
       navigate("/dashboard");
     } catch (err: any) {
-      setError(friendlyError(err.code) || err.message);
+      setError("Invalid email or password");
     } finally {
       setLoading(false);
     }
@@ -53,97 +45,119 @@ const Login = () => {
       await signInWithPopup(auth, provider);
       navigate("/dashboard");
     } catch (err: any) {
-      setError(friendlyError(err.code) || err.message);
+      setError("Google sign-in failed. Try again.");
     } finally {
       setLoadingGoogle(false);
     }
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-black text-white px-4">
-      <div className="w-full max-w-md">
-        <div className="bg-zinc-900 p-8 rounded-2xl shadow-2xl">
-          <h2 className="text-3xl font-extrabold mb-6 text-center">Welcome Back</h2>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 relative overflow-hidden px-4">
+      {/* Soft glowing gradient backdrop */}
+      <div className="absolute inset-0 blur-3xl bg-gradient-to-tr from-indigo-500/10 via-purple-600/10 to-pink-500/10 animate-pulse"></div>
 
-          {error && (
-            <p className="text-red-400 text-sm mb-4 text-center font-medium">{error}</p>
-          )}
+      {/* Glassy Login Card */}
+      <motion.div
+        initial={{ opacity: 0, y: 60 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
+        className="w-full max-w-md bg-gray-800/60 backdrop-blur-xl border border-gray-700 rounded-3xl shadow-2xl p-8 relative z-10"
+      >
+        <motion.h2
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="text-3xl font-bold text-center text-white mb-8"
+        >
+          Welcome Back
+        </motion.h2>
 
-          <button
-            onClick={handleGoogle}
-            disabled={loadingGoogle}
-            className="w-full flex items-center justify-center gap-3 py-2 rounded-xl bg-white text-black font-semibold mb-4 shadow-md hover:opacity-95 transition disabled:opacity-50"
-          >
-            <FcGoogle size={20} />
-            {loadingGoogle ? "Signing in..." : "Continue with Google"}
-          </button>
-
-          <div className="flex items-center text-sm text-gray-400 my-3">
-            <div className="flex-1 h-px bg-zinc-800" />
-            <div className="px-3">or</div>
-            <div className="flex-1 h-px bg-zinc-800" />
-          </div>
-
-          <form onSubmit={handleEmailLogin} className="space-y-4">
-            {/* Email */}
-            <div>
-              <label className="block text-sm font-medium mb-1">Email</label>
-              <div className="flex items-center bg-zinc-800 rounded-lg px-3">
-                <FaEnvelope className="text-gray-400 mr-2" />
-                <input
-                  type="email"
-                  placeholder="you@example.com"
-                  className="w-full bg-transparent py-2 focus:outline-none text-white placeholder-gray-400"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </div>
-            </div>
-
-            {/* Password */}
-            <div>
-              <label className="block text-sm font-medium mb-1">Password</label>
-              <div className="flex items-center bg-zinc-800 rounded-lg px-3">
-                <FaLock className="text-gray-400 mr-2" />
-                <input
-                  type={showPassword ? "text" : "password"}
-                  placeholder="••••••••"
-                  className="w-full bg-transparent py-2 focus:outline-none text-white placeholder-gray-400"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((s) => !s)}
-                  className="ml-2 p-1 text-gray-300 hover:text-white"
-                  aria-label={showPassword ? "Hide password" : "Show password"}
-                >
-                  {showPassword ? <FaEyeSlash /> : <FaEye />}
-                </button>
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-3 rounded-xl bg-white text-black font-semibold text-lg shadow-md hover:bg-gray-200 transition disabled:opacity-50"
-            >
-              {loading ? "Signing in..." : "Sign In"}
-            </button>
-          </form>
-
-          <p className="text-sm mt-5 text-center text-gray-400">
-            Don't have an account?{" "}
-            <a href="/signup" className="text-white font-semibold hover:underline">
-              Create account
-            </a>
+        {error && (
+          <p className="text-red-400 text-center mb-4 text-sm font-medium">
+            {error}
           </p>
+        )}
+
+        {/* Google Login */}
+        <motion.button
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.97 }}
+          onClick={handleGoogle}
+          disabled={loadingGoogle}
+          className="w-full flex items-center justify-center gap-3 py-3 rounded-xl bg-white text-gray-900 font-semibold shadow-md hover:bg-gray-100 transition disabled:opacity-60"
+        >
+          <FcGoogle size={22} />
+          {loadingGoogle ? "Signing in..." : "Continue with Google"}
+        </motion.button>
+
+        {/* Divider */}
+        <div className="flex items-center text-sm text-gray-400 my-6">
+          <div className="flex-1 h-px bg-zinc-700" />
+          <span className="px-3 text-gray-500">or</span>
+          <div className="flex-1 h-px bg-zinc-700" />
         </div>
-      </div>
+
+        {/* Email / Password Form */}
+        <form onSubmit={handleLogin} className="space-y-6">
+          {/* Email */}
+          <motion.div whileHover={{ scale: 1.02 }}>
+            <label className="text-sm text-gray-300 mb-1 block">Email</label>
+            <div className="relative">
+              <FaEnvelope className="absolute left-3 top-3 text-gray-400" />
+              <input
+                type="email"
+                placeholder="example@email.com"
+                className="w-full bg-gray-700/50 border border-gray-600 rounded-xl pl-10 pr-4 py-2.5 text-white placeholder-gray-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-400 outline-none transition-all"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+          </motion.div>
+
+          {/* Password */}
+          <motion.div whileHover={{ scale: 1.02 }}>
+            <label className="text-sm text-gray-300 mb-1 block">Password</label>
+            <div className="relative">
+              <FaLock className="absolute left-3 top-3 text-gray-400" />
+              <input
+                type={showPassword ? "text" : "password"}
+                placeholder="••••••••"
+                className="w-full bg-gray-700/50 border border-gray-600 rounded-xl pl-10 pr-10 py-2.5 text-white placeholder-gray-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-400 outline-none transition-all"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-3 text-gray-400 hover:text-gray-200 transition"
+              >
+                {showPassword ? <FaEyeSlash /> : <FaEye />}
+              </button>
+            </div>
+          </motion.div>
+
+          {/* Login Button */}
+          <motion.button
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+            type="submit"
+            disabled={loading}
+            className="w-full py-3 bg-indigo-500 hover:bg-indigo-600 text-white font-semibold rounded-xl shadow-lg shadow-indigo-500/30 transition-all disabled:opacity-60"
+          >
+            {loading ? "Logging in..." : "Login"}
+          </motion.button>
+        </form>
+
+        {/* Footer */}
+        <p className="text-sm text-gray-400 mt-6 text-center">
+          Don’t have an account?{" "}
+          <Link to="/signup" className="text-indigo-400 hover:underline">
+            Create one
+          </Link>
+        </p>
+      </motion.div>
     </div>
   );
-};
-
-export default Login;
+}
